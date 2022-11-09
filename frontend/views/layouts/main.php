@@ -48,10 +48,16 @@ AppAsset::register($this);
     if (Yii::$app->user->isGuest) {
         echo Html::tag('div',Html::a('Login',['/site/login'],['class' => ['btn btn-link login text-decoration-none']]),['class' => ['d-flex']]);
     } else {
+        echo Html::beginForm(['/profile/index'], 'post', ['class' => 'd-flex'])
+            . Html::submitButton(
+                'Profile',
+                ['class' => 'btn btn-link logout text-decoration-none']
+            )
+            . Html::endForm();
         echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
             . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
-                ['class' => 'btn btn-link logout text-decoration-none']
+                 Yii::$app->user->identity->getDisplayName(),
+                ['class' => 'btn btn-link logout text-decoration-none text-danger']
             )
             . Html::endForm();
     }
