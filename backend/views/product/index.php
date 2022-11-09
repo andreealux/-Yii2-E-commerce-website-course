@@ -48,7 +48,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'price',
             [
                 'attribute' => 'status',
-                'content' => function ($model) {
+                'format' => 'html',
+                'value' => function ($model) {
                     /** @var $model \common\models\Product */
                     return Html::tag('span', $model->status ? 'Active' : 'Draft', [
                         'class' => $model->status ? 'badge badge-success' : 'badge badge-danger'

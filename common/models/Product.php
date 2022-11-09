@@ -41,7 +41,8 @@ class Product extends \yii\db\ActiveRecord
         return '{{%products}}';
     }
 
-    public function behaviors(){
+    public function behaviors()
+    {
         return [
             TimestampBehavior::class,
             BlameableBehavior::class
@@ -54,7 +55,7 @@ class Product extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'price', 'status', 'image'], 'required'],
+            [['name', 'price', 'status'], 'required'],
             [['description'], 'string'],
             [['price'], 'number'],
             [['imageFile'], 'image', 'extensions' => 'png, jpg, jpeg, webp', 'maxSize' => 10 * 1024 * 1024],
@@ -138,25 +139,35 @@ class Product extends \yii\db\ActiveRecord
     public function save($runValidation = true, $attributeNames = null)
     {
         if ($this->imageFile) {
-            $this->image = '/products/'.Yii::$app->security->generateRandomString(32) . '/' . $this->imageFile->name;
+            $this->image = '/products/' . Yii::$app->security->generateRandomString(32) . '/' . $this->imageFile->name;
         }
 
         $transaction = Yii::$app->db->beginTransaction();
         $ok = parent::save($runValidation, $attributeNames);
 
-        if($ok){
-            $fullPath = Yii::getAlias('@frontend/web/storage'.$this->image);
+        if ($ok && $this->imageFile) {
+            $fullPath = Yii::getAlias('@frontend/web/storage' . $this->image);
             $dir = dirname($fullPath);
-            if(!FileHelper::createDirectory($dir) | !$this->imageFile->saveAs($fullPath)){
+
+            if (!FileHelper::createDirectory($dir) | !$this->imageFile->saveAs($fullPath)) {
                 $transaction->rollBack();
                 return false;
             }
-            $transaction->commit();
         }
+        $transaction->commit();
+
         return $ok;
     }
 
-    public function getImageUrl(){
-        return Yii::$app->params['frontendUrl'].'/storage'.$this->image;
+    public function getImageUrl()
+    {
+        if ($this->image) {
+            return Yii::$app->params['frontendUrl'] . '/storage' . $this->image;
+        }
+        return Yii::$app->params['frontendUrl'] . '/img/no_image.svg';
+    }
+
+    public function getShortDescription(){
+        return \yii\helpers\StringHelper::truncateWords(strip_tags($this->description), 20);
     }
 }
