@@ -17,7 +17,9 @@
         </div>
         <!-- Product actions-->
         <div class="card-footer pt-0 border-top-0 bg-transparent " style="background-color: #EAEAEA !important;" >
-            <div class="text-center m-3 "><a class="btn btn-primary mt-auto" href="#">Add to Cart</a></div>
+            <div class="text-center m-3 ">
+                <a href="<?php echo \yii\helpers\Url::to(['/cart/add']) ?>"
+                class="btn btn-primary mt-auto btn-add-to-cart" >Add to Cart</a></div>
         </div>
     </div>
 

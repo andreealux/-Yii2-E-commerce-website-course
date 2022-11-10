@@ -11,7 +11,7 @@ use yii\bootstrap5\ActiveForm;
 <?php endif ?>
 
 <?php $addressForm = ActiveForm::begin([
-    'action' => ['/profile/update-address'],
+    'action' => ['/site/update-address'],
     'options' => [
         'data-pjax' => 1
     ]

@@ -3,7 +3,6 @@
 /** @var \yii\web\View $this */
 
 use yii\bootstrap5\ActiveForm;
-use yii\helpers\Html;
 
 ?>
 <?php if (isset($success) && $success): ?>
@@ -13,7 +12,7 @@ use yii\helpers\Html;
 <?php endif ?>
 
 <?php $form = ActiveForm::begin([
-        'action' => ['/profile/update-account'],
+        'action' => ['/site/update-account'],
         'options' => [
             'data-pjax' => 1
         ]

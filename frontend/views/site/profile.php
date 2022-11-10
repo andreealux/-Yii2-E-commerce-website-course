@@ -6,9 +6,6 @@
 
 /** @var \yii\web\View $this */
 
-use yii\bootstrap5\ActiveForm;
-use yii\helpers\Html;
-
 ?>
 <div class="row mt-5">
     <div class="col">
