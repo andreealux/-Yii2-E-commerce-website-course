@@ -113,7 +113,7 @@ use yii\bootstrap5\ActiveForm;
 
         // finalize the transaction
         onApprove: (data, actions) => {
-            console.log(data, actions);
+            // console.log(data, actions);
             const captureOrderHandler = (details) => {
                 const payerName = details.payer.name.given_name;
                 const $form = $('#checkout-form');
@@ -127,12 +127,15 @@ use yii\bootstrap5\ActiveForm;
                     name: 'status',
                     value: details.status
                 });
-                $ajax({
+                $.ajax({
                     method: 'post',
                     url: '<?php echo \yii\helpers\Url::to(['/cart/create-order'])?>',
                     data: data,
                     success: function (res){
-                        console.log(res);
+                        // console.log(res);
+                    }
+                    error: function (err) {
+                        console.log(err)
                     }
                 })
                 console.log('Transaction completed');
@@ -144,6 +147,7 @@ use yii\bootstrap5\ActiveForm;
 
         // handle unrecoverable errors
         onError: (err) => {
+            console.log(err)
             console.error('An error prevented the buyer from checking out with PayPal');
         }
     });

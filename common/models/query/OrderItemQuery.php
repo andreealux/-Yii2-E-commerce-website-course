@@ -2,6 +2,8 @@
 
 namespace common\models\query;
 
+use common\models\Order;
+
 /**
  * This is the ActiveQuery class for [[\common\models\OrderItem]].
  *
@@ -31,4 +33,5 @@ class OrderItemQuery extends \yii\db\ActiveQuery
     {
         return parent::one($db);
     }
+
 }
