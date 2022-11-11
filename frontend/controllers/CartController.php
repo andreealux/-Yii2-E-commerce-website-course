@@ -7,6 +7,7 @@ use common\models\Order;
 use common\models\OrderAddress;
 use common\models\Product;
 use frontend\base\Controller;
+use Yii;
 use yii\filters\ContentNegotiator;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
@@ -19,7 +20,7 @@ class CartController extends Controller
         return [
             [
                 'class' => ContentNegotiator::class,
-                'only' => ['add'],
+                'only' => ['add', 'create-order'],
                 'formats' => [
                     'application/json' => Response::FORMAT_JSON,
                 ]
@@ -28,6 +29,7 @@ class CartController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['POST', 'DELETE'],
+                    'create-order' => ['POST'],
                 ]
             ]
         ];
@@ -38,21 +40,7 @@ class CartController extends Controller
         if (\Yii::$app->user->isGuest) {
             $cartItems = \Yii::$app->session->get(CartItem::SESSION_KEY, []);
         } else {
-            $cartItems = CartItem::findBySql("
-                            SELECT
-                            c.product_id as id,
-                            p.image,
-                            p.name,
-                            p.price,
-                            c.quantity,
-                            p.price * c.quantity as total_price
-                            FROM cart_items c
-                            LEFT JOIN products p on p.id = c.product_id
-                            WHERE c.created_by = :userId", [
-                'userId' => \Yii::$app->user->id
-            ])
-                ->asArray()
-                ->all();
+            $cartItems = CartItem::getItemsForUser(currentUserId());
         }
         return $this->render('index', [
             'items' => $cartItems
@@ -163,7 +151,7 @@ class CartController extends Controller
         $order = new Order();
         $orderAddress = new OrderAddress();
 
-        if(!isGuest()){
+        if(!isGuest()) {
             /** @var \common\models\User $user */
 
             $user = Yii::$app->user->identity;
@@ -174,20 +162,61 @@ class CartController extends Controller
             $order->email = $user->email;
             $order->status = Order::STATUS_DRAFT;
 
-
             $orderAddress->address = $userAddress->address;
             $orderAddress->city = $userAddress->city;
             $orderAddress->state = $userAddress->state;
             $orderAddress->country = $userAddress->country;
             $orderAddress->zipcode = $userAddress->zipcode;
+            $cartItems = CartItem::getItemsForUser(currentUserId());
 
+        } else {
+            $cartItems = \Yii::$app->session->get(CartItem::SESSION_KEY, []);
+        }
+        $productQuantity = CartItem::getTotalQuantityForUser(currentUserId());
+        $totalPrice = CartItem::getTotalPriceForUser(currentUserId());
             return $this->render('checkout', [
                 'order' => $order,
-                'orderAddress' => $orderAddress
+                'orderAddress' => $orderAddress,
+                'cartItems' => $cartItems,
+                'productQuantity' => $productQuantity,
+                'totalPrice' => $totalPrice
             ]);
+    }
+
+    public function actionCreateOrder(){
+        $transactionId = Yii::$app->request->post('transactionId');
+        $status = Yii::$app->request->post('status');
+
+        $order = new Order();
+        $order->transaction_id = $transactionId;
+        $order->status = $status === 'COMPLETED' ? Order::STATUS_COMPLETED : Order::STATUS_FAILURED;
+
+        $order->total_price = CartItem::getTotalPriceForUser(currentUserId());
+
+        $orderAddress = new OrderAddress();
+        if($order->load(Yii::$app->request->post()) && $order->save()){
+            $orderAddress->order_id = $order->id;
+            if($orderAddress->load(Yii::$app->request->post()) && $orderAddress->save()){
+                return[
+                    'success' => true
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'errors' => $orderAddress->errors
+                ];
+            }
+        } else {
+            return[
+                'success' => false,
+                'errors' => $order->errors
+            ];
         }
     }
+
+
 }
+
 
 
 
