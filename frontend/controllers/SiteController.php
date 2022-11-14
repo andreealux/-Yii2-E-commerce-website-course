@@ -96,6 +96,7 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
+        Yii::$app->language = 'de-DE';
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
